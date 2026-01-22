@@ -28,16 +28,24 @@ jobs:
           gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
 
       - name: Build and Push Docker Image
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
-          IMAGE="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fastapi-docker-repo/fastapi-app:latest"
+          IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/fastapi-docker-repo/fastapi-app:latest"
+          echo "Building image: $IMAGE"
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
 
       - name: Deploy to Cloud Run
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
-          IMAGE="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fastapi-docker-repo/fastapi-app:latest"
+          IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/fastapi-docker-repo/fastapi-app:latest"
+          echo "Deploying image: $IMAGE"
           gcloud run deploy fastapi-app \
             --image "$IMAGE" \
-            --region "${{ secrets.GCP_REGION }}" \
+            --region "$GCP_REGION" \
             --platform managed \
             --allow-unauthenticated
